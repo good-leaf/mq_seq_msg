@@ -106,7 +106,7 @@ init([]) ->
     {stop, Reason :: term(), Reply :: term(), NewState :: #state{}} |
     {stop, Reason :: term(), NewState :: #state{}}).
 handle_call({append, Pid}, _From, #state{consumer_free = Queue} = State) ->
-    ?DEBUG("append consumer pid:~p", [Pid]),
+    lager:debug("append consumer pid:~p", [Pid]),
     {reply, ok, State#state{consumer_free = queue:in(Pid, Queue)}};
 handle_call(choose, _From, #state{consumer_free = Queue} = State) ->
     case consumer_check_alive(Queue) of
@@ -224,7 +224,7 @@ notice_execute(TaskInfo) ->
                             %drop dead pid, task execute failed
                             drop
                     end,
-                    ?ERROR("notice execute failed, task:~p", [TaskInfo]),
+                    lager:error("notice execute failed, task:~p", [TaskInfo]),
                     error
             end;
         {skip, _Pid} ->
@@ -238,10 +238,10 @@ cancel_execute(TaskInfo) ->
     case recv_consumer:task_unsubscribe(Pid) of
         ok ->
             task_consumer_unbind(TaskInfo, Pid),
-            ?ERROR("cancel execute success, task:~p", [TaskInfo]),
+            lager:error("cancel execute success, task:~p", [TaskInfo]),
             ok;
         error ->
-            ?ERROR("cancel execute failed, task:~p", [TaskInfo]),
+            lager:error("cancel execute failed, task:~p", [TaskInfo]),
             error
     end.
 
@@ -260,7 +260,7 @@ get_consumer_pid_from_task(TaskInfo) ->
     TaskId = task_server:task_id(TaskInfo),
     case ets:lookup(?TASK_TAB, TaskId) of
         [] ->
-            ?ERROR("get_consumer_pid_from_task exception, task:~p", [TaskInfo]),
+            lager:error("get_consumer_pid_from_task exception, task:~p", [TaskInfo]),
             {error, empty};
         [{TaskId, TaskInfo, ConsumerPid}] ->
             {ok, ConsumerPid}
@@ -294,7 +294,7 @@ task_check() ->
             true ->
                 ok;
             false ->
-                ?ERROR("task status check, task:~p, consumer:~p is dead.", [TaskInfo, ConsumerPid])
+                lager:error("task status check, task:~p, consumer:~p is dead.", [TaskInfo, ConsumerPid])
         end
         end,
     [Fun(T) || T <- TaskList].

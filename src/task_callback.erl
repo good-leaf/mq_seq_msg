@@ -85,22 +85,22 @@ init([]) ->
     {stop, Reason :: term(), Reply :: term(), NewState :: #state{}} |
     {stop, Reason :: term(), NewState :: #state{}}).
 handle_call(task_list, _From, State) ->
-    %?DEBUG("query task list"),
+    %lager:debug("query task list"),
     Reply = generate_task(),
     {reply, Reply, State};
 handle_call({task_notice, TaskInfo}, _From, State) ->
-    ?DEBUG("recv task notice, task:~p", [TaskInfo]),
+    lager:debug("recv task notice, task:~p", [TaskInfo]),
     try
         Flag = task_manager:notice_execute(TaskInfo),
         {reply, Flag, State}
     catch
         Error:Reason  ->
-            ?ERROR("task notice execute error:~p, reason:~p, task_info:~p, trace:~p",
+            lager:error("task notice execute error:~p, reason:~p, task_info:~p, trace:~p",
                 [Error, Reason, TaskInfo, erlang:get_stacktrace()]),
             {reply, error, State}
     end;
 handle_call({task_cancel, TaskInfo}, _From, State) ->
-    ?DEBUG("recv task cancel, task:~p", [TaskInfo]),
+    lager:debug("recv task cancel, task:~p", [TaskInfo]),
     try
         Flag = task_manager:cancel_execute(TaskInfo),
         {reply, Flag, State}
@@ -226,5 +226,5 @@ generate_task() ->
 -spec handle_message(pid(), binary()) -> ok | error.
 handle_message(ConsumerPid, Event) ->
     %消息如果采用异步处理，在任务取消变更时，可能存在异步进程还没有处理完消息，任务就被分配到别的节点。
-    ?DEBUG("recv consumer:~p, event:~p", [ConsumerPid, Event]),
+    lager:debug("recv consumer:~p, event:~p", [ConsumerPid, Event]),
     ok.

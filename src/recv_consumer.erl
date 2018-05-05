@@ -143,7 +143,7 @@ handle_info({#'basic.deliver'{delivery_tag = Tag, redelivered = _Redelivered},
         MsgModule:handle_message(self(), Body)
     catch
         E:R  ->
-            ?ERROR("mq message overload, error:~p, reason:~p", [E, R])
+            lager:error("mq message overload, error:~p, reason:~p", [E, R])
     end,
     %消息确认 异步进程自动回复
     amqp_channel:cast(Channel, #'basic.ack'{delivery_tag = Tag}),
@@ -189,7 +189,7 @@ task_unsubscribe(Pid) ->
 %%% Internal functions
 %%%===================================================================
 subscribe(TaskInfo, Config,  State) ->
-    ?DEBUG("mq subscribe config:~p, state:~p", [Config, State]),
+    lager:debug("mq subscribe config:~p, state:~p", [Config, State]),
     Channel = State#state.channel,
     case is_pid(Channel) andalso is_process_alive(Channel) of
         true ->
@@ -215,19 +215,19 @@ subscribe(TaskInfo, Config,  State) ->
                 {ok, State#state{consumer_tag = ConsumerTag, task = TaskInfo, config = Config, queue = MqName}}
             catch
                 Error:Reason ->
-                    ?ERROR("mq subscribe error:~p, reason:~p, state:~p, trace:~p",
+                    lager:error("mq subscribe error:~p, reason:~p, state:~p, trace:~p",
                         [Error, Reason, State, erlang:get_stacktrace()]),
                     {error, State}
             end;
         false ->
-            ?ERROR("mq subscribe channel:~p is dead, config:~p, state:~p",
+            lager:error("mq subscribe channel:~p is dead, config:~p, state:~p",
                 [Channel, Config, State]),
             {error, State}
     end.
 
 unsubscribe(State) ->
     Channel = State#state.channel,
-    ?DEBUG("mq unsubscribe, state:~p", [State]),
+    lager:debug("mq unsubscribe, state:~p", [State]),
     case is_pid(Channel) andalso is_process_alive(Channel) of
         true ->
             try
@@ -237,12 +237,12 @@ unsubscribe(State) ->
                 {ok, State#state{queue = <<"">>, task = <<"">>, consumer_tag = <<>>, config = []}}
             catch
                 Error:Reason ->
-                    ?ERROR("mq unsubscribe error:~p, reason:~p, state:~p, trace:~p",
+                    lager:error("mq unsubscribe error:~p, reason:~p, state:~p, trace:~p",
                         [Error, Reason, State, erlang:get_stacktrace()]),
                     {error, State}
             end;
         false ->
-            ?ERROR("mq unsubscribe channel:~p is dead, state:~p",
+            lager:error("mq unsubscribe channel:~p is dead, state:~p",
                 [Channel, State]),
             {error, State}
     end.
