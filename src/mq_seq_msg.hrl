@@ -8,6 +8,6 @@
 %%%-------------------------------------------------------------------
 -author("yangyajun03").
 
--include("../deps/slager/src/slager.hrl").
+-include_lib("slager/src/slager.hrl").
 -define(APP_NAME, mq_seq_msg).
 -define(MQ_POOLS, begin {ok, Pools} = application:get_env(?APP_NAME, mq_pools), Pools end).
