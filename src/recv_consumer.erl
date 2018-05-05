@@ -73,7 +73,7 @@ init([Channel]) ->
     process_flag(trap_exit,true),
     erlang:monitor(process, Channel),
     task_manager:consumer_append(self()),
-    {ok, #state{channel = Channel, pid = self(), task = <<>>, config = [], queue = <<"">>}}.
+    {ok, #state{channel = Channel, pid = self(), task = <<>>, config = [], queue = <<"">>, consumer_tag = <<>>}}.
 %%--------------------------------------------------------------------
 %% @private
 %% @doc
@@ -199,7 +199,8 @@ subscribe(TaskInfo, Config,  State) ->
                     queue = proplists:get_value(queue, Config, <<"">>),
                     durable = proplists:get_value(durable, Config, false),
                     exclusive = proplists:get_value(exclusive, Config, false),
-                    auto_delete = proplists:get_value(auto_delete, Config, false)
+                    auto_delete = proplists:get_value(auto_delete, Config, false),
+                    arguments = proplists:get_value(arguments, Config, [])
                 },
                 #'queue.declare_ok'{queue = MqName} = amqp_channel:call(Channel, QueueDeclare),
 
