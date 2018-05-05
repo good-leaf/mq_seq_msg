@@ -1,0 +1,9 @@
+/Users/yangyajun03/code/mq_seq_msg/deps/task_dispatch
+/Users/yangyajun03/code/mq_seq_msg/deps/mnesia_cluster
+/Users/yangyajun03/code/mq_seq_msg/deps/rabbitmq_pool
+/Users/yangyajun03/code/mq_seq_msg/deps/rabbit_common
+/Users/yangyajun03/code/mq_seq_msg/deps/rabbitmq_codegen
+/Users/yangyajun03/code/mq_seq_msg/deps/amqp_client
+/Users/yangyajun03/code/mq_seq_msg/deps/slager
+/Users/yangyajun03/code/mq_seq_msg/deps/lager
+/Users/yangyajun03/code/mq_seq_msg/deps/goldrush

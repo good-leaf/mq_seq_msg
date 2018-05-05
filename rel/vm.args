@@ -1,0 +1,7 @@
+-name mq_seq_msg@127.0.0.1
+-setcookie mq_seq_msg
+-heart
++P 1000000
++K true
++e 84000
+-mnesia dir '"/opt/apps/logs/mq_seq_msg/mnesia/"'
