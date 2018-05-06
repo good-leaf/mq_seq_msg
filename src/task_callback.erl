@@ -209,9 +209,9 @@ task_cancel(TaskInfo, TimeOut) ->
 
 -spec generate_task() -> {ok, list()} | {error, list()}.
 generate_task() ->
-    Snum = proplists:get_value(start_num, ?MQ_CONFIG),
-    Enum = proplists:get_value(end_num, ?MQ_CONFIG),
-    Prefix = proplists:get_value(prefix, ?MQ_CONFIG),
+    Snum = proplists:get_value(start_num, ?TASK_CONFIG),
+    Enum = proplists:get_value(end_num, ?TASK_CONFIG),
+    Prefix = proplists:get_value(prefix, ?TASK_CONFIG),
 
     TaskNum = lists:seq(Snum, Enum),
     {ok, lists:foldl(fun(N, Acc) ->
