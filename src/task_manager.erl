@@ -211,7 +211,7 @@ notice_execute(TaskInfo) ->
     error_logger:info_msg("task notice execute, task:~p", [TaskInfo]),
     case consumer_normal_choose(TaskInfo) of
         {ok, Pid} ->
-            case recv_consumer:task_subscribe(Pid, TaskInfo, ?MQ_CONFIG) of
+            case recv_consumer:task_subscribe(Pid, TaskInfo) of
                 ok ->
                     task_consumer_bind(TaskInfo, Pid),
                     ok;

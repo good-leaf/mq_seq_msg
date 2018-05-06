@@ -34,7 +34,7 @@
 }).
 
 -export([
-    task_subscribe/3,
+    task_subscribe/2,
     task_unsubscribe/1
 ]).
 %%%===================================================================
@@ -89,8 +89,8 @@ init([Channel]) ->
     {noreply, NewState :: #state{}, timeout() | hibernate} |
     {stop, Reason :: term(), Reply :: term(), NewState :: #state{}} |
     {stop, Reason :: term(), NewState :: #state{}}).
-handle_call({subscribe, TaskInfo, Config}, _From, State) ->
-    {Flag, NewState} = subscribe(TaskInfo, Config, State),
+handle_call({subscribe, TaskInfo}, _From, State) ->
+    {Flag, NewState} = subscribe(TaskInfo, State),
     SaveState = case Flag of
                     ok ->
                         NewState;
@@ -180,16 +180,17 @@ terminate(_Reason, State) ->
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
-task_subscribe(Pid, TaskInfo, Config) ->
-    gen_server:call(Pid, {subscribe, TaskInfo, Config}).
+task_subscribe(Pid, TaskInfo) ->
+    gen_server:call(Pid, {subscribe, TaskInfo}).
 
 task_unsubscribe(Pid) ->
     gen_server:call(Pid, unsubscribe).
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-subscribe(TaskInfo, Config,  State) ->
-    lager:debug("mq subscribe config:~p, state:~p", [Config, State]),
+subscribe(TaskInfo, State) ->
+    Config = TaskInfo ++ ?MQ_CONFIG,
+    lager:debug("mq subscribe task:~p, config:~p, state:~p", [TaskInfo, Config, State]),
     Channel = State#state.channel,
     case is_pid(Channel) andalso is_process_alive(Channel) of
         true ->

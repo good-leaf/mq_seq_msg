@@ -216,7 +216,7 @@ generate_task() ->
     TaskNum = lists:seq(Snum, Enum),
     {ok, lists:foldl(fun(N, Acc) ->
         Bnum = integer_to_binary(N),
-        Acc ++ [?MQ_CONFIG ++ [{routing_key, <<Prefix/binary, Bnum/binary, ".*">>}]] end, [], TaskNum)}.
+        Acc ++ [{routing_key, <<Prefix/binary, Bnum/binary, ".*">>}] end, [], TaskNum)}.
 
 -spec handle_message(pid(), binary()) -> ok | error.
 handle_message(ConsumerPid, Event) ->
