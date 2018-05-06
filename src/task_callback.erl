@@ -209,19 +209,14 @@ task_cancel(TaskInfo, TimeOut) ->
 
 -spec generate_task() -> {ok, list()} | {error, list()}.
 generate_task() ->
-    UeCfg = application:get_env(mq_seq_msg, ue_event, [
-        {start_num, 1},
-        {end_num, 500},
-        {prefix, <<"ue.event.">>}
-    ]),
-    Snum = proplists:get_value(start_num, UeCfg),
-    Enum = proplists:get_value(end_num, UeCfg),
-    Prefix = proplists:get_value(prefix, UeCfg),
+    Snum = proplists:get_value(start_num, ?MQ_CONFIG),
+    Enum = proplists:get_value(end_num, ?MQ_CONFIG),
+    Prefix = proplists:get_value(prefix, ?MQ_CONFIG),
 
     TaskNum = lists:seq(Snum, Enum),
     {ok, lists:foldl(fun(N, Acc) ->
         Bnum = integer_to_binary(N),
-        Acc ++ [<<Prefix/binary, Bnum/binary, "*">>] end, [], TaskNum)}.
+        Acc ++ [?MQ_CONFIG ++ [{routing_key, <<Prefix/binary, Bnum/binary, ".*">>}]] end, [], TaskNum)}.
 
 -spec handle_message(pid(), binary()) -> ok | error.
 handle_message(ConsumerPid, Event) ->
