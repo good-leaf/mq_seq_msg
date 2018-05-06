@@ -209,10 +209,9 @@ consumer_check_alive(Queue) ->
 
 notice_execute(TaskInfo) ->
     error_logger:info_msg("task notice execute, task:~p", [TaskInfo]),
-    {ok, UeEvent} = application:get_env(?APP_NAME, ue_event),
     case consumer_normal_choose(TaskInfo) of
         {ok, Pid} ->
-            case recv_consumer:task_subscribe(Pid, TaskInfo, UeEvent) of
+            case recv_consumer:task_subscribe(Pid, TaskInfo, ?MQ_CONFIG) of
                 ok ->
                     task_consumer_bind(TaskInfo, Pid),
                     ok;
