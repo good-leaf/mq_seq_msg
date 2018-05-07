@@ -70,7 +70,7 @@ start(Channel) ->
     {ok, State :: #state{}} | {ok, State :: #state{}, timeout() | hibernate} |
     {stop, Reason :: term()} | ignore).
 init([Channel]) ->
-    process_flag(trap_exit,true),
+    process_flag(trap_exit, true),
     erlang:monitor(process, Channel),
     task_manager:consumer_append(self()),
     {ok, #state{channel = Channel, pid = self(), task = <<>>, config = [], queue = <<"">>, consumer_tag = <<>>}}.
@@ -142,7 +142,7 @@ handle_info({#'basic.deliver'{delivery_tag = Tag, redelivered = _Redelivered},
         {ok, MsgModule} = application:get_env(mq_seq_msg, msg_module),
         MsgModule:handle_message(self(), Body)
     catch
-        E:R  ->
+        E:R ->
             lager:error("mq message overload, error:~p, reason:~p", [E, R])
     end,
     %消息确认 异步进程自动回复
@@ -164,7 +164,7 @@ handle_info(_Info, State) ->
 -spec(terminate(Reason :: (normal | shutdown | {shutdown, term()} | term()),
     State :: #state{}) -> term()).
 terminate(_Reason, State) ->
-    task_manager:task_consumer_unbind( State#state.task, State#state.pid),
+    task_manager:task_consumer_unbind(State#state.task, State#state.pid),
     ok.
 %%--------------------------------------------------------------------
 %% @private
@@ -250,7 +250,6 @@ unsubscribe(State) ->
     end.
 
 
-
 %%declare_exchange(Channel) ->
 %%    Command = #'exchange.declare'{
 %%        exchange = ?TASK_MQ_EXCHANGE
@@ -265,6 +264,6 @@ unsubscribe(State) ->
 %%    try amqp_channel:call(Channel, Command)
 %%    catch
 %%        E:R ->
-%%            error_logger:error_msg("amqp command exchange:~p, extype:~p, exception:~p, reason:~p",
+%%            lager:error("amqp command exchange:~p, extype:~p, exception:~p, reason:~p",
 %%                [?TASK_MQ_EXCHANGE, ?TASK_MQ_EX_TYPE, E, R])
 %%    end.

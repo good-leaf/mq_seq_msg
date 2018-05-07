@@ -208,7 +208,7 @@ consumer_check_alive(Queue) ->
     end.
 
 notice_execute(TaskInfo) ->
-    error_logger:info_msg("task notice execute, task:~p", [TaskInfo]),
+    lager:debug("task notice execute, task:~p", [TaskInfo]),
     case consumer_normal_choose(TaskInfo) of
         {ok, Pid} ->
             case recv_consumer:task_subscribe(Pid, TaskInfo) of
@@ -231,13 +231,13 @@ notice_execute(TaskInfo) ->
     end.
 
 cancel_execute(TaskInfo) ->
-    error_logger:info_msg("task cancel execute, task:~p", [TaskInfo]),
+    lager:debug("task cancel execute, task:~p", [TaskInfo]),
     {ok, Pid} = get_consumer_pid_from_task(TaskInfo),
     %是否检查此进程已经停止
     case recv_consumer:task_unsubscribe(Pid) of
         ok ->
             task_consumer_unbind(TaskInfo, Pid),
-            lager:error("cancel execute success, task:~p", [TaskInfo]),
+            lager:debug("cancel execute success, task:~p", [TaskInfo]),
             ok;
         error ->
             lager:error("cancel execute failed, task:~p", [TaskInfo]),
@@ -251,7 +251,7 @@ consumer_normal_choose(TaskInfo) ->
         [] ->
             {ok, Pid};
         [{TaskId, TaskInfo, ConsumerPid}] ->
-            error_logger:error_msg("task exist bind, task:~p, concumer:~p", [TaskInfo, ConsumerPid]),
+            lager:error("task exist bind, task:~p, concumer:~p", [TaskInfo, ConsumerPid]),
             {skip, ConsumerPid}
     end.
 
@@ -295,5 +295,5 @@ task_check() ->
             false ->
                 lager:error("task status check, task:~p, consumer:~p is dead.", [TaskInfo, ConsumerPid])
         end
-        end,
+          end,
     [Fun(T) || T <- TaskList].

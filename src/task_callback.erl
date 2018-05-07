@@ -94,7 +94,7 @@ handle_call({task_notice, TaskInfo}, _From, State) ->
         Flag = task_manager:notice_execute(TaskInfo),
         {reply, Flag, State}
     catch
-        Error:Reason  ->
+        Error:Reason ->
             lager:error("task notice execute error:~p, reason:~p, task_info:~p, trace:~p",
                 [Error, Reason, TaskInfo, erlang:get_stacktrace()]),
             {reply, error, State}
@@ -105,8 +105,8 @@ handle_call({task_cancel, TaskInfo}, _From, State) ->
         Flag = task_manager:cancel_execute(TaskInfo),
         {reply, Flag, State}
     catch
-        Error:Reason  ->
-            error_logger:error_msg("task cancel execute error:~p, reason:~p, task_info:~p, trace:~p",
+        Error:Reason ->
+            lager:error("task cancel execute error:~p, reason:~p, task_info:~p, trace:~p",
                 [Error, Reason, TaskInfo, erlang:get_stacktrace()]),
             {reply, error, State}
     end;
@@ -190,7 +190,7 @@ mnesia_tables() ->
             {record_name, dispatch_task},
             {attributes, record_info(fields, dispatch_task)},
             {ram_copies, [node()]},
-            {match, #dispatch_task{_='_'}}
+            {match, #dispatch_task{_ = '_'}}
         ]}
     ].
 
