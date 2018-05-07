@@ -34,6 +34,7 @@
 }).
 
 -export([
+    callback_ack/2,
     task_subscribe/2,
     task_unsubscribe/1
 ]).
@@ -120,6 +121,9 @@ handle_call(_Request, _From, State) ->
     {noreply, NewState :: #state{}} |
     {noreply, NewState :: #state{}, timeout() | hibernate} |
     {stop, Reason :: term(), NewState :: #state{}}).
+handle_cast({ack, Tag}, #state{channel = Channel} = State) ->
+    amqp_channel:cast(Channel, #'basic.ack'{delivery_tag = Tag}),
+    {noreply, State};
 handle_cast(_Request, State) ->
     {noreply, State}.
 %%--------------------------------------------------------------------
@@ -137,16 +141,14 @@ handle_cast(_Request, State) ->
     {noreply, NewState :: #state{}, timeout() | hibernate} |
     {stop, Reason :: term(), NewState :: #state{}}).
 handle_info({#'basic.deliver'{delivery_tag = Tag, redelivered = _Redelivered},
-    #amqp_msg{payload = Body}}, #state{channel = Channel} = State) ->
+    #amqp_msg{payload = Body}}, State) ->
     try
         {ok, MsgModule} = application:get_env(mq_seq_msg, msg_module),
-        MsgModule:handle_message(self(), Body)
+        MsgModule:handle_message(self(), Tag, Body)
     catch
         E:R ->
             lager:error("mq message overload, error:~p, reason:~p", [E, R])
     end,
-    %消息确认 异步进程自动回复
-    amqp_channel:cast(Channel, #'basic.ack'{delivery_tag = Tag}),
     {noreply, State, hibernate};
 handle_info(_Info, State) ->
     {noreply, State}.
@@ -188,6 +190,9 @@ task_unsubscribe(Pid) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+callback_ack(Pid, Tag) ->
+    gen_server:cast(Pid, {ack, Tag}).
+
 subscribe(TaskInfo, State) ->
     Config = TaskInfo ++ ?MQ_CONFIG,
     lager:debug("mq subscribe task:~p, config:~p, state:~p", [TaskInfo, Config, State]),

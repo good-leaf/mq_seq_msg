@@ -26,7 +26,7 @@
     task_notice/2,
     task_cancel/2,
     mnesia_tables/0,
-    handle_message/2
+    handle_message/3
 ]).
 
 
@@ -218,8 +218,9 @@ generate_task() ->
         Bnum = integer_to_binary(N),
         Acc ++ [[{routing_key, <<Prefix/binary, Bnum/binary, ".*">>}]] end, [], TaskNum)}.
 
--spec handle_message(pid(), binary()) -> ok | error.
-handle_message(ConsumerPid, Event) ->
+-spec handle_message(pid(), integer(), binary()) -> ok | error.
+handle_message(ConsumerPid, AckTag, Event) ->
     %消息如果采用异步处理，在任务取消变更时，可能存在异步进程还没有处理完消息，任务就被分配到别的节点。
-    lager:debug("recv consumer:~p, event:~p", [ConsumerPid, Event]),
+    lager:debug("recv consumer:~p, ack_tag:~p, event:~p", [ConsumerPid, AckTag, Event]),
+    recv_consumer:callback_ack(ConsumerPid, AckTag),
     ok.

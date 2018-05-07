@@ -38,7 +38,7 @@ send(Payload) ->
     rabbitmq_pool:safe_publish(Exchange, Payload).
 
 send_test(LoopNum) ->
-    Payload = <<"You keep on concentrating on the things you wish you had or things you wish you didn’t have and you sort of forget what you do have.-Nick Vujicic">>,
+    Payload = <<"You keep on concentrating on the things you wish you had or things you wish you did not have and you sort of forget what you do have.-Nick Vujicic">>,
     Snum = proplists:get_value(start_num, ?TASK_CONFIG),
     Enum = proplists:get_value(end_num, ?TASK_CONFIG),
     Prefix = proplists:get_value(prefix, ?TASK_CONFIG),

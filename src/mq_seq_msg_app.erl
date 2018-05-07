@@ -15,4 +15,4 @@ stop(_State) ->
 
 check_fun_export() ->
     {ok, MsgModule} = application:get_env(?APP_NAME, msg_module),
-    true = erlang:function_exported(MsgModule, handle_message, 2).
+    true = erlang:function_exported(MsgModule, handle_message, 3).
