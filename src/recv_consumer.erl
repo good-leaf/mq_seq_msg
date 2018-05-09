@@ -166,7 +166,7 @@ handle_info(_Info, State) ->
 -spec(terminate(Reason :: (normal | shutdown | {shutdown, term()} | term()),
     State :: #state{}) -> term()).
 terminate(_Reason, State) ->
-    task_manager:task_consumer_unbind(State#state.task, State#state.pid),
+    task_manager:task_consumer_exception_unbind(State#state.task, State#state.pid),
     ok.
 %%--------------------------------------------------------------------
 %% @private

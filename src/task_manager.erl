@@ -25,14 +25,15 @@
 
 -export([
     start/0,
-    task_consumer_unbind/2,
+    task_table/0,
     notice_execute/1,
     cancel_execute/1,
     consumer_append/1,
     consumer_choose/0,
+    task_free_consumer/0,
+    task_consumer_unbind/2,
     consumer_normal_choose/1,
-    task_table/0,
-    task_free_consumer/0
+    task_consumer_exception_unbind/2
 ]).
 
 
@@ -49,6 +50,7 @@
 %%%===================================================================
 start() ->
     rabbitmq_pool:add_pools(?MQ_POOLS, infinity),
+    task_server:node_register(node()),
     task_server:start().
 %%--------------------------------------------------------------------
 %% @doc
@@ -279,6 +281,18 @@ task_consumer_unbind(TaskInfo, Pid) ->
             drop
     end, ok.
 
+task_consumer_exception_unbind(TaskInfo, Pid) ->
+    true = ets:insert(?TASK_TAB, {task_server:task_id(TaskInfo), TaskInfo, <<"">>}),
+    case is_process_alive(Pid) of
+        true ->
+            consumer_append(Pid);
+        false ->
+            %drop dead pid, task execute failed
+            drop
+    end,
+    %重新分配任务
+    notice_execute(TaskInfo), ok.
+
 task_table() ->
     ets:tab2list(?TASK_TAB).
 
@@ -288,12 +302,18 @@ task_free_consumer() ->
 task_check() ->
     TaskList = ets:tab2list(?TASK_TAB),
     Fun = fun(T) ->
-        {_TaskId, TaskInfo, ConsumerPid} = T,
-        case is_pid(ConsumerPid) andalso is_process_alive(ConsumerPid) of
-            true ->
+        {_TaskId, TaskInfo, _ConsumerPid} = T,
+        %异常任务重启
+        case ets:lookup(?TASK_TAB, task_server:task_id(TaskInfo)) of
+            [] ->
                 ok;
-            false ->
-                lager:error("task status check, task:~p, consumer:~p is dead.", [TaskInfo, ConsumerPid])
-        end
-          end,
+            [{_TaskId, TaskInfo, NewConsumerPid}] ->
+                case is_pid(NewConsumerPid) andalso is_process_alive(NewConsumerPid) of
+                    true ->
+                        ok;
+                    false ->
+                        lager:error("task status check, task:~p, consumer:~p is dead.", [TaskInfo, NewConsumerPid]),
+                        notice_execute(TaskInfo)
+                end
+        end end,
     [Fun(T) || T <- TaskList].
